@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ code }} Error – Snip.ly</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --bg: #07080f; --card: #141829; --border: rgba(255,255,255,.08); --accent1: #6c63ff; --accent2: #a78bfa; --text: #e2e8f0; --muted: #64748b; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse 60% 50% at 50% 30%, rgba(108,99,255,.12) 0%, transparent 60%); pointer-events: none; }
+    .error-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 56px 48px; text-align: center; max-width: 440px; width: 90%; position: relative; z-index: 1; box-shadow: 0 30px 80px rgba(0,0,0,.5); }
+    .error-code { font-size: 5rem; font-weight: 800; letter-spacing: -.04em; background: linear-gradient(135deg, var(--accent1), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .error-emoji { font-size: 2.5rem; margin: 12px 0; }
+    .error-msg { font-size: 1rem; color: var(--muted); line-height: 1.6; margin-bottom: 32px; }
+    .btn { display: inline-block; padding: 12px 28px; background: linear-gradient(135deg, var(--accent1), var(--accent2)); color: #fff; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: .95rem; transition: opacity .2s; }
+    .btn:hover { opacity: .85; }
+  </style>
+</head>
+<body>
+  <div class="error-card">
+    <div class="error-code">{{ code }}</div>
+    <div class="error-emoji">{% if code == 404 %}🔍{% else %}💥{% endif %}</div>
+    <div class="error-msg">{{ message }}</div>
+    <a href="/" class="btn">Go Home</a>
+  </div>
+</body>
+</html>

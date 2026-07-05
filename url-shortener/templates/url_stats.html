@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Link Stats – Snip.ly</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #07080f; --surface: #0e1120; --card: #141829;
+      --border: rgba(255,255,255,0.08);
+      --accent1: #6c63ff; --accent2: #a78bfa; --accent3: #38bdf8;
+      --text: #e2e8f0; --muted: #64748b; --success: #10b981; --radius: 14px;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; display: flex; flex-direction: column;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background: radial-gradient(ellipse 70% 50% at 30% 20%, rgba(108,99,255,.15) 0%, transparent 60%);
+      pointer-events: none; z-index: 0;
+    }
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 40px;
+      background: rgba(7,8,15,.8); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-logo { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, var(--accent1), var(--accent3)); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .nav-brand-name { font-size: 1.2rem; font-weight: 700; background: linear-gradient(90deg, var(--accent2), var(--accent3)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .nav-links { display: flex; gap: 8px; }
+    .nav-link { text-decoration: none; color: var(--muted); font-size: .9rem; font-weight: 500; padding: 8px 16px; border-radius: 8px; transition: all .2s; }
+    .nav-link:hover { color: var(--text); background: var(--surface); }
+
+    main { flex: 1; position: relative; z-index: 1; padding: 60px 40px; max-width: 700px; margin: 0 auto; width: 100%; }
+
+    .breadcrumb { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: .85rem; margin-bottom: 32px; }
+    .breadcrumb a { color: var(--accent2); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+
+    .page-title { font-size: 2rem; font-weight: 800; letter-spacing: -.02em; margin-bottom: 6px; }
+    .gradient-text { background: linear-gradient(135deg, var(--accent1), var(--accent2), var(--accent3)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .page-sub { color: var(--muted); font-size: .95rem; margin-bottom: 40px; word-break: break-all; }
+
+    .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 28px; }
+    .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; position: relative; overflow: hidden; }
+    .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+    .stat-card:nth-child(1)::before { background: linear-gradient(90deg, var(--accent1), var(--accent2)); }
+    .stat-card:nth-child(2)::before { background: linear-gradient(90deg, var(--success), var(--accent3)); }
+    .stat-label { font-size: .76rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 10px; }
+    .stat-value { font-size: 2.4rem; font-weight: 800; letter-spacing: -.03em; }
+    .stat-value.click-value { color: var(--success); }
+    .stat-icon { position: absolute; top: 20px; right: 20px; font-size: 1.5rem; opacity: .5; }
+
+    .info-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .info-row { display: flex; align-items: flex-start; gap: 16px; padding: 20px 24px; border-bottom: 1px solid var(--border); }
+    .info-row:last-child { border-bottom: none; }
+    .info-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 2px; }
+    .info-key { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 4px; }
+    .info-val { font-size: .95rem; word-break: break-all; }
+    .info-val a { color: var(--accent3); text-decoration: none; }
+    .info-val a:hover { text-decoration: underline; }
+
+    .actions { display: flex; gap: 10px; margin-top: 24px; flex-wrap: wrap; }
+    .btn-primary { background: linear-gradient(135deg, var(--accent1), var(--accent2)); border: none; border-radius: 10px; padding: 12px 22px; color: #fff; font-family: inherit; font-size: .9rem; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: opacity .2s, transform .15s; }
+    .btn-primary:hover { opacity: .9; transform: translateY(-1px); }
+    .btn-outline { background: transparent; border: 1px solid var(--border); border-radius: 10px; padding: 12px 22px; color: var(--text); font-family: inherit; font-size: .9rem; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all .2s; }
+    .btn-outline:hover { border-color: rgba(108,99,255,.4); color: var(--accent2); background: rgba(108,99,255,.06); }
+
+    footer { position: relative; z-index: 1; text-align: center; padding: 24px; color: var(--muted); font-size: .82rem; border-top: 1px solid var(--border); }
+    footer a { color: var(--accent2); text-decoration: none; }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-in { animation: fadeUp .5s ease both; }
+    .delay-1 { animation-delay: .1s; }
+
+    @media (max-width: 480px) { nav { padding: 14px 20px; } main { padding: 40px 16px; } .stat-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="/">
+    <div class="nav-logo">⚡</div>
+    <span class="nav-brand-name">Snip.ly</span>
+  </a>
+  <div class="nav-links">
+    <a href="/" class="nav-link">Shorten</a>
+    <a href="/stats" class="nav-link">Stats</a>
+  </div>
+</nav>
+
+<main>
+  <div class="breadcrumb animate-in">
+    <a href="/stats">← All Links</a>
+    <span>/</span>
+    <span>{{ row['short_code'] }}</span>
+  </div>
+
+  <h1 class="page-title animate-in">Link <span class="gradient-text">Details</span></h1>
+  <p class="page-sub animate-in">Analytics for <strong>/{{ row['short_code'] }}</strong></p>
+
+  <div class="stat-grid animate-in">
+    <div class="stat-card">
+      <div class="stat-label">Short Code</div>
+      <div class="stat-value" style="font-size:1.6rem;">{{ row['short_code'] }}</div>
+      <div class="stat-icon">🔗</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Clicks</div>
+      <div class="stat-value click-value">{{ row['click_count'] }}</div>
+      <div class="stat-icon">📊</div>
+    </div>
+  </div>
+
+  <div class="info-card animate-in delay-1">
+    <div class="info-row">
+      <span class="info-icon">⚡</span>
+      <div>
+        <div class="info-key">Short URL</div>
+        <div class="info-val"><a href="{{ short_url }}" target="_blank" rel="noopener">{{ short_url }}</a></div>
+      </div>
+    </div>
+    <div class="info-row">
+      <span class="info-icon">🌐</span>
+      <div>
+        <div class="info-key">Original URL</div>
+        <div class="info-val"><a href="{{ row['long_url'] }}" target="_blank" rel="noopener">{{ row['long_url'] }}</a></div>
+      </div>
+    </div>
+    <div class="info-row">
+      <span class="info-icon">📅</span>
+      <div>
+        <div class="info-key">Created At</div>
+        <div class="info-val">{{ row['created_at'] }} UTC</div>
+      </div>
+    </div>
+    <div class="info-row">
+      <span class="info-icon">👆</span>
+      <div>
+        <div class="info-key">Click Count</div>
+        <div class="info-val">{{ row['click_count'] }} click{% if row['click_count'] != 1 %}s{% endif %}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions animate-in delay-1">
+    <button class="btn-primary" id="copy-btn" onclick="copyLink('{{ short_url }}')">📋 Copy Short Link</button>
+    <a href="/" class="btn-outline">+ Shorten Another</a>
+    <a href="/stats" class="btn-outline">← All Links</a>
+  </div>
+</main>
+
+<footer>
+  Built with ❤️ by <a href="#">Qometrics Technologies</a>
+</footer>
+
+<script>
+  function copyLink(url) {
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = '✓ Copied!';
+      btn.style.background = '#10b981';
+      setTimeout(() => {
+        btn.textContent = '📋 Copy Short Link';
+        btn.style.background = '';
+      }, 2000);
+    });
+  }
+</script>
+
+</body>
+</html>

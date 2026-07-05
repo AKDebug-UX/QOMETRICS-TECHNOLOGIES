@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stats Dashboard – Snip.ly</title>
+  <meta name="description" content="Analytics dashboard for all shortened URLs – click counts, creation dates, and more." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:      #07080f;
+      --surface: #0e1120;
+      --card:    #141829;
+      --border:  rgba(255,255,255,0.08);
+      --accent1: #6c63ff;
+      --accent2: #a78bfa;
+      --accent3: #38bdf8;
+      --text:    #e2e8f0;
+      --muted:   #64748b;
+      --success: #10b981;
+      --radius:  14px;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 50% at 10% 20%, rgba(108,99,255,.14) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 45% at 90% 70%, rgba(56,189,248,.1) 0%, transparent 55%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 40px;
+      background: rgba(7,8,15,.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-logo {
+      width: 34px; height: 34px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent1), var(--accent3));
+      display: flex; align-items: center; justify-content: center; font-size: 18px;
+    }
+    .nav-brand-name {
+      font-size: 1.2rem; font-weight: 700;
+      background: linear-gradient(90deg, var(--accent2), var(--accent3));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .nav-links { display: flex; gap: 8px; }
+    .nav-link {
+      text-decoration: none; color: var(--muted); font-size: .9rem; font-weight: 500;
+      padding: 8px 16px; border-radius: 8px; transition: all .2s;
+    }
+    .nav-link:hover { color: var(--text); background: var(--surface); }
+    .nav-link.active { color: var(--accent2); background: rgba(108,99,255,.12); }
+
+    main {
+      flex: 1; position: relative; z-index: 1;
+      padding: 60px 40px; max-width: 1100px; margin: 0 auto; width: 100%;
+    }
+
+    .page-header { margin-bottom: 40px; }
+    .page-header h1 { font-size: 2rem; font-weight: 800; letter-spacing: -.02em; margin-bottom: 8px; }
+    .gradient-text {
+      background: linear-gradient(135deg, var(--accent1), var(--accent2), var(--accent3));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .page-header p { color: var(--muted); font-size: .95rem; }
+
+    /* ── Summary cards ── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 36px;
+    }
+    .summary-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color .2s, transform .2s;
+    }
+    .summary-card:hover { border-color: rgba(108,99,255,.35); transform: translateY(-2px); }
+    .summary-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+    }
+    .summary-card:nth-child(1)::before { background: linear-gradient(90deg, var(--accent1), var(--accent2)); }
+    .summary-card:nth-child(2)::before { background: linear-gradient(90deg, var(--accent3), var(--accent2)); }
+    .summary-card:nth-child(3)::before { background: linear-gradient(90deg, var(--success), var(--accent3)); }
+    .summary-label { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 10px; }
+    .summary-value { font-size: 2.2rem; font-weight: 800; letter-spacing: -.03em; }
+    .summary-icon { position: absolute; top: 20px; right: 20px; font-size: 1.6rem; opacity: .5; }
+
+    /* ── Table ── */
+    .table-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,.4);
+    }
+    .table-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .table-header h2 { font-size: 1rem; font-weight: 700; }
+    .table-count {
+      background: rgba(108,99,255,.15);
+      border: 1px solid rgba(108,99,255,.3);
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--accent2);
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      text-align: left;
+      font-size: .75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      padding: 14px 24px;
+      background: var(--surface);
+    }
+    tbody tr {
+      border-top: 1px solid var(--border);
+      transition: background .15s;
+    }
+    tbody tr:hover { background: rgba(255,255,255,.02); }
+    tbody td { padding: 16px 24px; vertical-align: middle; }
+
+    .url-cell { max-width: 340px; }
+    .url-original {
+      font-size: .82rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: block;
+      max-width: 320px;
+    }
+    .url-short a {
+      font-size: .92rem;
+      font-weight: 600;
+      color: var(--accent3);
+      text-decoration: none;
+    }
+    .url-short a:hover { text-decoration: underline; }
+
+    .badge-click {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16,185,129,.1);
+      border: 1px solid rgba(16,185,129,.2);
+      border-radius: 999px;
+      padding: 5px 12px;
+      font-size: .82rem;
+      font-weight: 700;
+      color: var(--success);
+    }
+    .badge-click.zero {
+      background: rgba(100,116,139,.1);
+      border-color: rgba(100,116,139,.2);
+      color: var(--muted);
+    }
+
+    .date-cell { font-size: .82rem; color: var(--muted); }
+
+    .stats-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      color: var(--muted);
+      font-size: .82rem;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      transition: all .2s;
+    }
+    .stats-link:hover { color: var(--accent2); border-color: rgba(108,99,255,.4); background: rgba(108,99,255,.08); }
+
+    .empty-state {
+      text-align: center;
+      padding: 80px 24px;
+      color: var(--muted);
+    }
+    .empty-state .empty-icon { font-size: 3rem; margin-bottom: 16px; }
+    .empty-state h3 { font-size: 1.2rem; color: var(--text); margin-bottom: 8px; }
+    .empty-state p { font-size: .9rem; }
+    .empty-state a {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 24px;
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
+      color: #fff;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: .9rem;
+      transition: opacity .2s;
+    }
+    .empty-state a:hover { opacity: .85; }
+
+    footer {
+      position: relative; z-index: 1;
+      text-align: center; padding: 24px;
+      color: var(--muted); font-size: .82rem;
+      border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--accent2); text-decoration: none; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in { animation: fadeUp .5s ease both; }
+    .delay-1 { animation-delay: .1s; }
+    .delay-2 { animation-delay: .2s; }
+
+    @media (max-width: 768px) {
+      nav { padding: 14px 20px; }
+      main { padding: 40px 16px; }
+      .summary-grid { grid-template-columns: 1fr 1fr; }
+      thead th:last-child, tbody td:last-child { display: none; }
+    }
+    @media (max-width: 480px) {
+      .summary-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="/">
+    <div class="nav-logo">⚡</div>
+    <span class="nav-brand-name">Snip.ly</span>
+  </a>
+  <div class="nav-links">
+    <a href="/" class="nav-link">Shorten</a>
+    <a href="/stats" class="nav-link active">Stats</a>
+  </div>
+</nav>
+
+<main>
+  <div class="page-header animate-in">
+    <h1>Link <span class="gradient-text">Analytics</span></h1>
+    <p>All your shortened links and their performance in one place.</p>
+  </div>
+
+  {% if rows %}
+  {% set total_clicks = rows | sum(attribute='click_count') %}
+  {% set top_clicks = rows | map(attribute='click_count') | max %}
+
+  <div class="summary-grid animate-in delay-1">
+    <div class="summary-card">
+      <div class="summary-label">Total Links</div>
+      <div class="summary-value">{{ rows | length }}</div>
+      <div class="summary-icon">🔗</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Total Clicks</div>
+      <div class="summary-value">{{ total_clicks }}</div>
+      <div class="summary-icon">👆</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Top Performing</div>
+      <div class="summary-value">{{ top_clicks }}</div>
+      <div class="summary-icon">🏆</div>
+    </div>
+  </div>
+
+  <div class="table-card animate-in delay-2">
+    <div class="table-header">
+      <h2>All Links</h2>
+      <span class="table-count">{{ rows | length }} link{% if rows | length != 1 %}s{% endif %}</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Short Link</th>
+          <th>Original URL</th>
+          <th>Clicks</th>
+          <th>Created</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        <tr>
+          <td>
+            <div class="url-short">
+              <a href="/{{ row['short_code'] }}" target="_blank" rel="noopener">/{{ row['short_code'] }}</a>
+            </div>
+          </td>
+          <td class="url-cell">
+            <span class="url-original" title="{{ row['long_url'] }}">{{ row['long_url'] }}</span>
+          </td>
+          <td>
+            <span class="badge-click {% if row['click_count'] == 0 %}zero{% endif %}">
+              {% if row['click_count'] > 0 %}📈{% else %}—{% endif %}
+              {{ row['click_count'] }} click{% if row['click_count'] != 1 %}s{% endif %}
+            </span>
+          </td>
+          <td class="date-cell">{{ row['created_at'][:10] }}</td>
+          <td>
+            <a href="/stats/{{ row['short_code'] }}" class="stats-link">Details →</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% else %}
+  <div class="table-card animate-in delay-1">
+    <div class="empty-state">
+      <div class="empty-icon">🔗</div>
+      <h3>No links yet</h3>
+      <p>Shorten your first URL to see analytics here.</p>
+      <a href="/">Shorten a URL</a>
+    </div>
+  </div>
+  {% endif %}
+</main>
+
+<footer>
+  Built with ❤️ by <a href="#">Qometrics Technologies</a> · <a href="/">Shorten a new URL</a>
+</footer>
+
+</body>
+</html>
