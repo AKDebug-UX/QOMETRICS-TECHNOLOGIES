@@ -1,11 +1,3 @@
-"""
-tasks/manager.py
-────────────────
-CRUD operations for tasks. All functions are pure Python and testable
-in isolation – they accept an optional `path` argument so tests can
-redirect I/O to a temporary file without touching real storage.
-"""
-
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -14,49 +6,18 @@ from typing import List, Optional
 
 from tasks.storage import load_store, save_store
 
-# Valid priority levels (ordered)
-PRIORITIES   = ("low", "normal", "high")
-VALID_STATUS = ("pending", "done")
+PRIORITIES = ("low", "normal", "high")
 
 
-# ── Internal helpers ──────────────────────────────────────────────────────
-
-def _now_iso() -> str:
-    """Return current UTC time as an ISO-8601 string."""
+def _now():
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
 
 
-def _find_task(tasks: List[dict], task_id: int) -> Optional[dict]:
-    """Return the task with the given id, or None if not found."""
+def _find(tasks, task_id):
     return next((t for t in tasks if t["id"] == task_id), None)
 
 
-# ── CRUD operations ───────────────────────────────────────────────────────
-
-def add_task(
-    title: str,
-    priority: str = "normal",
-    tags: Optional[List[str]] = None,
-    path: Optional[Path] = None,
-) -> dict:
-    """
-    Create a new task and persist it.
-
-    Parameters
-    ----------
-    title    : Task description (must be non-empty after stripping).
-    priority : One of 'low', 'normal', 'high'.
-    tags     : Optional list of tag strings.
-    path     : Override storage path (for tests).
-
-    Returns
-    -------
-    The newly created task dict.
-
-    Raises
-    ------
-    ValueError if title is blank or priority is invalid.
-    """
+def add_task(title: str, priority="normal", tags=None, path=None) -> dict:
     title = title.strip()
     if not title:
         raise ValueError("Task title cannot be empty.")
@@ -70,7 +31,7 @@ def add_task(
         "priority":     priority,
         "tags":         [t.strip().lower() for t in (tags or []) if t.strip()],
         "status":       "pending",
-        "created_at":   _now_iso(),
+        "created_at":   _now(),
         "completed_at": None,
     }
     store["tasks"].append(task)
@@ -79,24 +40,9 @@ def add_task(
     return task
 
 
-def list_tasks(
-    status_filter: str = "all",
-    priority_filter: Optional[str] = None,
-    tag_filter: Optional[str] = None,
-    path: Optional[Path] = None,
-) -> List[dict]:
-    """
-    Return tasks, optionally filtered.
-
-    Parameters
-    ----------
-    status_filter   : 'all', 'pending', or 'done'.
-    priority_filter : Optional priority to restrict to.
-    tag_filter      : Optional tag string to restrict to.
-    path            : Override storage path (for tests).
-    """
-    if status_filter not in ("all", *VALID_STATUS):
-        raise ValueError(f"status_filter must be one of: all, pending, done.")
+def list_tasks(status_filter="all", priority_filter=None, tag_filter=None, path=None):
+    if status_filter not in ("all", "pending", "done"):
+        raise ValueError("status_filter must be one of: all, pending, done.")
 
     tasks = load_store(path)["tasks"]
 
@@ -107,49 +53,30 @@ def list_tasks(
             raise ValueError(f"Priority must be one of {PRIORITIES}.")
         tasks = [t for t in tasks if t["priority"] == priority_filter]
     if tag_filter:
-        tag_lower = tag_filter.strip().lower()
-        tasks = [t for t in tasks if tag_lower in t.get("tags", [])]
+        tag = tag_filter.strip().lower()
+        tasks = [t for t in tasks if tag in t.get("tags", [])]
 
     return tasks
 
 
-def mark_done(task_id: int, path: Optional[Path] = None) -> dict:
-    """
-    Mark a task as completed.
-
-    Returns the updated task.
-
-    Raises
-    ------
-    KeyError  if no task with that id exists.
-    ValueError if the task is already done.
-    """
+def mark_done(task_id: int, path=None) -> dict:
     store = load_store(path)
-    task  = _find_task(store["tasks"], task_id)
+    task = _find(store["tasks"], task_id)
 
     if task is None:
         raise KeyError(f"No task found with id {task_id}.")
     if task["status"] == "done":
         raise ValueError(f"Task {task_id} is already marked as done.")
 
-    task["status"]       = "done"
-    task["completed_at"] = _now_iso()
+    task["status"] = "done"
+    task["completed_at"] = _now()
     save_store(store, path)
     return task
 
 
-def delete_task(task_id: int, path: Optional[Path] = None) -> dict:
-    """
-    Permanently remove a task.
-
-    Returns the deleted task.
-
-    Raises
-    ------
-    KeyError if no task with that id exists.
-    """
+def delete_task(task_id: int, path=None) -> dict:
     store = load_store(path)
-    task  = _find_task(store["tasks"], task_id)
+    task = _find(store["tasks"], task_id)
 
     if task is None:
         raise KeyError(f"No task found with id {task_id}.")
@@ -159,22 +86,9 @@ def delete_task(task_id: int, path: Optional[Path] = None) -> dict:
     return task
 
 
-def edit_task(
-    task_id:          int,
-    title:            Optional[str]       = None,
-    priority:         Optional[str]       = None,
-    tags:             Optional[List[str]] = None,
-    path:             Optional[Path]      = None,
-) -> dict:
-    """
-    Update an existing task's fields.
-
-    Only the provided (non-None) fields are modified.
-
-    Returns the updated task.
-    """
+def edit_task(task_id: int, title=None, priority=None, tags=None, path=None) -> dict:
     store = load_store(path)
-    task  = _find_task(store["tasks"], task_id)
+    task = _find(store["tasks"], task_id)
 
     if task is None:
         raise KeyError(f"No task found with id {task_id}.")
@@ -197,30 +111,20 @@ def edit_task(
     return task
 
 
-def clear_done(path: Optional[Path] = None) -> int:
-    """
-    Remove all completed tasks.
-
-    Returns the number of tasks removed.
-    """
-    store    = load_store(path)
-    original = len(store["tasks"])
+def clear_done(path=None) -> int:
+    store = load_store(path)
+    before = len(store["tasks"])
     store["tasks"] = [t for t in store["tasks"] if t["status"] != "done"]
-    removed  = original - len(store["tasks"])
     save_store(store, path)
-    return removed
+    return before - len(store["tasks"])
 
 
-def get_stats(path: Optional[Path] = None) -> dict:
-    """Return a summary dict with task counts."""
-    tasks   = load_store(path)["tasks"]
-    total   = len(tasks)
-    done    = sum(1 for t in tasks if t["status"] == "done")
-    pending = total - done
-    by_priority = {p: sum(1 for t in tasks if t["priority"] == p) for p in PRIORITIES}
+def get_stats(path=None) -> dict:
+    tasks = load_store(path)["tasks"]
+    done = sum(1 for t in tasks if t["status"] == "done")
     return {
-        "total":       total,
+        "total":       len(tasks),
         "done":        done,
-        "pending":     pending,
-        "by_priority": by_priority,
+        "pending":     len(tasks) - done,
+        "by_priority": {p: sum(1 for t in tasks if t["priority"] == p) for p in PRIORITIES},
     }
