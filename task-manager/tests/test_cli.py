@@ -12,7 +12,7 @@ from unittest.mock import patch
 from main import main
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────
+
 
 def run(*args, store_path):
     """Run main() with the given args against a temp store."""
@@ -20,7 +20,7 @@ def run(*args, store_path):
         return main(list(args))
 
 
-# ── add ───────────────────────────────────────────────────────────────────
+
 
 class TestCLIAdd:
 
@@ -40,7 +40,7 @@ class TestCLIAdd:
         assert code == 0
 
 
-# ── list ──────────────────────────────────────────────────────────────────
+
 
 class TestCLIList:
 
@@ -56,7 +56,7 @@ class TestCLIList:
         assert run("list", "--priority", "high", store_path=store_path) == 0
 
 
-# ── done ─────────────────────────────────────────────────────────────────
+
 
 class TestCLIDone:
 
@@ -75,7 +75,7 @@ class TestCLIDone:
         assert run("done", "1", store_path=store_path) == 0
 
 
-# ── delete ────────────────────────────────────────────────────────────────
+
 
 class TestCLIDelete:
 
@@ -92,7 +92,7 @@ class TestCLIDelete:
         assert run("rm", "1", store_path=store_path) == 0
 
 
-# ── edit ─────────────────────────────────────────────────────────────────
+
 
 class TestCLIEdit:
 
@@ -110,7 +110,7 @@ class TestCLIEdit:
         assert code != 0
 
 
-# ── clear ────────────────────────────────────────────────────────────────
+
 
 class TestCLIClear:
 
@@ -129,7 +129,7 @@ class TestCLIClear:
         assert tasks == []
 
 
-# ── stats ─────────────────────────────────────────────────────────────────
+
 
 class TestCLIStats:
 

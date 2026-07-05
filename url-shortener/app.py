@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 
 app = Flask(__name__)
 
-# ── Database ────────────────────────────────────────────────────────────────
+# Database setup
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "urls.db")
 
@@ -36,7 +36,7 @@ def init_db():
         conn.commit()
 
 
-# ── Helpers ─────────────────────────────────────────────────────────────────
+# Core helpers
 
 def generate_short_code(length: int = 6) -> str:
     """Generate a URL-safe random short code."""
@@ -85,7 +85,7 @@ def create_short_url(long_url: str) -> str:
         return code
 
 
-# ── Routes ───────────────────────────────────────────────────────────────────
+# Application routes
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -161,7 +161,7 @@ def server_error(e):
     return render_template("error.html", code=500, message="Internal server error."), 500
 
 
-# ── Entry point ──────────────────────────────────────────────────────────────
+# Server startup
 
 if __name__ == "__main__":
     init_db()

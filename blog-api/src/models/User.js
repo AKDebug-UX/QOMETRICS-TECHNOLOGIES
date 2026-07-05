@@ -52,7 +52,7 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// ── Hash password before save ─────────────────────────────────────────────
+// Hash password before save
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   this.password = await bcrypt.hash(this.password, 12);
@@ -60,7 +60,7 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
-// ── Instance methods ──────────────────────────────────────────────────────
+// Instance methods
 
 /** Compare a plaintext password against the stored hash */
 userSchema.methods.comparePassword = async function (candidatePassword) {
@@ -93,7 +93,7 @@ userSchema.methods.changedPasswordAfter = function (jwtIssuedAt) {
   return false;
 };
 
-// ── Sanitise output (remove __v) ──────────────────────────────────────────
+// Sanitise output (remove __v)
 userSchema.set('toJSON', {
   versionKey: false,
   transform: (_doc, ret) => {

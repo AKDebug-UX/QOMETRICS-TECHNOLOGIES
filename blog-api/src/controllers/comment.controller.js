@@ -1,11 +1,6 @@
 const Comment = require('../models/Comment');
 const Post    = require('../models/Post');
 
-/**
- * @desc   Get comments for a post (threaded)
- * @route  GET /api/posts/:postId/comments
- * @access Public
- */
 exports.getComments = async (req, res, next) => {
   try {
     const post = await Post.findById(req.params.postId);
@@ -22,11 +17,6 @@ exports.getComments = async (req, res, next) => {
   }
 };
 
-/**
- * @desc   Add a comment to a post
- * @route  POST /api/posts/:postId/comments
- * @access Private
- */
 exports.addComment = async (req, res, next) => {
   try {
     const post = await Post.findById(req.params.postId);
@@ -34,7 +24,6 @@ exports.addComment = async (req, res, next) => {
 
     const { body, parentId } = req.body;
 
-    // Validate parentId exists (if provided)
     if (parentId) {
       const parent = await Comment.findOne({ _id: parentId, post: post._id });
       if (!parent) {
@@ -44,24 +33,18 @@ exports.addComment = async (req, res, next) => {
 
     const comment = await Comment.create({
       body,
-      author:   req.user._id,
-      post:     post._id,
+      author: req.user._id,
+      post: post._id,
       parentId: parentId || null,
     });
 
     await comment.populate('author', 'name avatar');
-
     res.status(201).json({ success: true, data: comment });
   } catch (err) {
     next(err);
   }
 };
 
-/**
- * @desc   Update a comment
- * @route  PUT /api/comments/:id
- * @access Private (owner only)
- */
 exports.updateComment = async (req, res, next) => {
   try {
     const comment = await Comment.findById(req.params.id);
@@ -83,11 +66,6 @@ exports.updateComment = async (req, res, next) => {
   }
 };
 
-/**
- * @desc   Delete a comment (soft-delete)
- * @route  DELETE /api/comments/:id
- * @access Private (owner or admin)
- */
 exports.deleteComment = async (req, res, next) => {
   try {
     const comment = await Comment.findById(req.params.id);
@@ -107,18 +85,13 @@ exports.deleteComment = async (req, res, next) => {
   }
 };
 
-/**
- * @desc   Toggle like on a comment
- * @route  PATCH /api/comments/:id/like
- * @access Private
- */
 exports.toggleLike = async (req, res, next) => {
   try {
     const comment = await Comment.findById(req.params.id);
     if (!comment) return res.status(404).json({ success: false, message: 'Comment not found.' });
 
     const userId = req.user._id;
-    const liked  = comment.likes.some((id) => id.equals(userId));
+    const liked = comment.likes.some((id) => id.equals(userId));
     const update = liked
       ? { $pull: { likes: userId } }
       : { $addToSet: { likes: userId } };

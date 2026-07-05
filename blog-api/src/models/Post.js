@@ -70,7 +70,7 @@ const postSchema = new mongoose.Schema(
   }
 );
 
-// ── Virtuals ──────────────────────────────────────────────────────────────
+// Virtuals
 postSchema.virtual('likeCount').get(function () {
   return this.likes.length;
 });
@@ -82,7 +82,7 @@ postSchema.virtual('commentCount', {
   count:        true,
 });
 
-// ── Auto-generate unique slug on save ─────────────────────────────────────
+// Auto-generate unique slug on save
 postSchema.pre('save', async function (next) {
   if (!this.isModified('title')) return next();
 
@@ -105,7 +105,7 @@ postSchema.pre('save', async function (next) {
   next();
 });
 
-// ── Text index for search ─────────────────────────────────────────────────
+// Text index for search
 postSchema.index({ title: 'text', content: 'text', tags: 'text' });
 
 module.exports = mongoose.model('Post', postSchema);
