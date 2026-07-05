@@ -287,7 +287,6 @@
 </nav>
 
 <main>
-  <p class="eyebrow">// url shortener</p>
   <h1>Long URLs are<br><em>embarrassing</em></h1>
   <p class="sub">Paste any URL below and get a short link you're not ashamed to share.</p>
 
@@ -304,11 +303,8 @@
       <button class="btn" type="submit" id="submit-btn">Shorten →</button>
     </form>
 
-    {% if error %}
     <div class="error">{{ error }}</div>
-    {% endif %}
-
-    {% if short_url %}
+    
     <div class="result">
       <div class="result-text">
         <div class="result-label">your link</div>
@@ -316,7 +312,6 @@
       </div>
       <button class="copy-btn" id="copy-btn" onclick="copy('{{ short_url }}')">Copy</button>
     </div>
-    {% endif %}
   </div>
 
   <div class="pills">
