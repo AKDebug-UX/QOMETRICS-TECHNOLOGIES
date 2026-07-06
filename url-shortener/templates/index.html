@@ -303,9 +303,9 @@
       <button class="btn" type="submit" id="submit-btn">Shorten →</button>
     </form>
 
-    <div class="error">{{ error }}</div>
+    <div class="error" {% if not error %}style="display: none;"{% endif %}>{{ error }}</div>
     
-    <div class="result">
+    <div class="result" {% if not short_url %}style="display: none;"{% endif %}>
       <div class="result-text">
         <div class="result-label">your link</div>
         <a class="result-link" href="{{ short_url }}" target="_blank" rel="noopener">{{ short_url }}</a>
