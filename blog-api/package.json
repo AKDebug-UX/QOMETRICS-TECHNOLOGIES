@@ -1,11 +1,11 @@
 {
   "name": "blog-api",
   "version": "1.0.0",
-  "description": "RESTful Blog API with JWT authentication – Qometrics Technologies",
+  "description": "RESTful Blog API with JWT authentication \u2013 Qometrics Technologies",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
+    "start": "node api.js && node server.js",
+    "dev": "node api.js && nodemon server.js",
     "test": "echo \"No tests yet\" && exit 0"
   },
   "dependencies": {
